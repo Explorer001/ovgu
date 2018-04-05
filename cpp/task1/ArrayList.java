@@ -21,6 +21,7 @@ public class ArrayList {
       System.out.println();
       
       vec.erase(28,5);
+      System.out.println(vec.size());
       
       for (int i = 0; i < vec.capacity(); i++) {
         System.out.println(vec.get_at(i));
@@ -144,8 +145,8 @@ public class ArrayList {
           this.vector[i] = 0;
         }
         //update size and head
+        this.vector_size -= this.head - index;
         this.head = index - 1;
-        this.vector_size -= (length - 1);
       } else {
         //removes block and shift
         for (int i = index; i < (index + length-1); i++) {

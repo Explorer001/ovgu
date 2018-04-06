@@ -10,22 +10,26 @@ public class ArrayList {
 
     public static void main(String[] args) {
       ArrayList vec = new ArrayList();
-      for (int i = 1; i <= 29; i++) {
+      for (int i = 0; i < 15; i++) {
         vec.push_back(i);
       }
-      //vec.set_at(5,37);
-      //vec.insert(7,42);
-
-      System.out.println(vec.size());
-      System.out.println(vec.capacity());
-      System.out.println();
-      
-      vec.erase(28,5);
-      System.out.println(vec.size());
-      
-      for (int i = 0; i < vec.capacity(); i++) {
-        System.out.println(vec.get_at(i));
+      for (int i = 20; i < 23; i++) {
+        vec.insert(3,i);
       }
+      vec.erase(3,3);
+      vec.push_back(15);
+      vec.erase(14,5);
+      System.out.println(vec.toString());
+      System.out.println(vec.size());
+    }
+
+    public String toString() {
+      String str = "[";
+      for (int i = 0; i < this.vector_size - 1; i++) {
+        str += Integer.toString(this.vector[i]) + ", ";
+      }
+      str += Integer.toString(this.vector[this.vector_size - 1]) + "]";
+      return str;
     }
 
     // Return the current number of elements.
@@ -43,7 +47,7 @@ public class ArrayList {
       this.vector = new int[INIT_SIZE];
       this.vector_capacity = INIT_SIZE;
       this.vector_size = 0;
-      this.head = 0;
+      this.head = -1;
     }
 
     // Increase the capacity to hold at least newSize elements.
@@ -63,14 +67,14 @@ public class ArrayList {
     // Add an element to the back of the ArrayList.
     public void push_back(int element) {
       //resize if insert index is bigger than capacity
-      if (this.head + 1 >= this.vector_capacity) {
+      this.head += 1;
+      if (this.head >= this.vector_capacity) {
         int new_capacity = this.vector_capacity + RESIZE_SIZE;
         this.reserve(new_capacity);
       }
       //insert element at end and update head
       this.vector[this.head] = element;
       this.vector_size += 1;
-      this.head += 1;
     }
 
     // Remove the last element from the ArrayList.
@@ -89,9 +93,8 @@ public class ArrayList {
     // Set the value at the given position.
     public void set_at(int index, int element) {
       //print error if index > head
-      if (index > this.head) {
-        System.out.println("Insert bigger than size. Use index in range");
-        return;
+      if (index > this.head || index < 0) {
+        throw new IndexOutOfBoundsException();
       }
       //add  element at index
       this.vector[index] = element;
@@ -101,9 +104,8 @@ public class ArrayList {
     // The elements after that position are shifted towards the back.
     public void insert(int index, int element) {
       //catch index > head
-      if (index > this.head) {
-        System.out.println("Insert bigger than size. Use index in range");
-        return;
+      if (index > this.head || index < 0) {
+        throw new IndexOutOfBoundsException();
       }
       this.head += 1;
       //updates the size if new head is of bounds
@@ -122,27 +124,20 @@ public class ArrayList {
     // Erase a block of elements of size length, starting at index.
     // The elements following this block are shifted towards the front.
     public void erase(int index, int length) {
-      //if index + block_len >= head - no shift
-      if ((index + length - 1) >= this.head) {
-        for (int i = index; i <= this.head; i++) {
-          this.vector[i] = 0;
-        }
-        //update size and head
-        this.vector_size -= this.head - index;
-        this.head = index - 1;
-      } else {
-        //removes block and shift
-        for (int i = index; i < (index + length-1); i++) {
-          this.vector[i] = 0;
-        }
-        int shift_index = index;
-        for (int i = (index + length - 1); i <= this.head; i++) {
-          this.vector[shift_index] = this.vector[i];
-          this.vector[i] = 0;
-          shift_index++;
-        }
-        this.vector_size -= (length-1);
-        this.head -= (length-1);
+      //removes block and shift
+      int for_goal = this.head;
+      int shift_element;
+      int new_head = this.head;
+      for (int i = index; i <= for_goal; i++) {
+        shift_element = (i+length <= head)? this.vector[i+length] : 0;
+        this.vector[i] = shift_element;
+        new_head -= 1;
       }
+      if (new_head <= (this.head - length)) {
+        this.head -= length;
+      } else {
+        this.head = new_head;
+      }
+      this.vector_size = this.head + 1;
     }
 }

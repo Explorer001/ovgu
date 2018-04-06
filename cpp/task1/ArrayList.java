@@ -88,52 +88,35 @@ public class ArrayList {
 
     // Set the value at the given position.
     public void set_at(int index, int element) {
-      //resizes the array until index is in bounds
-      if (index >= this.vector_capacity) {
-        int capacity_diff = (index - (this.vector_capacity - 1)) + 1;
-        int resize_factor = (capacity_diff / RESIZE_SIZE) + 1;
-        int new_capacity = this.vector_capacity + (resize_factor * RESIZE_SIZE);
-        this.reserve(new_capacity);
-      }
-      //add  element at index and update head and size if nessesary
-      this.vector[index] = element;
+      //print error if index > head
       if (index > this.head) {
-        this.vector_size += 1;
-        this.head = index;
+        System.out.println("Insert bigger than size. Use index in range");
+        return;
       }
+      //add  element at index
+      this.vector[index] = element;
     }
 
     // Insert the element at the given index. 
     // The elements after that position are shifted towards the back.
     public void insert(int index, int element) {
-      //insert element after head - no need to shift
+      //catch index > head
       if (index > this.head) {
-        //resize if index out of bounds
-        if (index >= (this.vector_capacity)) {
-          int capacity_diff = (index - (this.vector_capacity - 1)) + 1;
-          int resize_factor = (capacity_diff / RESIZE_SIZE) + 1;
-          int new_capacity = this.vector_capacity + (resize_factor * RESIZE_SIZE);
-          this.reserve(new_capacity);
-        }
-        //insert element and update head
-        this.vector[index] = element;
-        this.head = index;
-        this.vector_size += 1;
-      // insert element before head - need to shift
-      } else {
-        this.head += 1;
-        //updates the size if new head is of bounds
-        if (this.head >= this.vector_capacity) {
-          int new_capacity = this.vector_capacity + RESIZE_SIZE;
-          this.reserve(new_capacity);
-        }
-        //shifts and insert element
-        for (int i = head-1; i >= index; i--) {
-          this.vector[i+1] = this.vector[i];
-        }
-        this.vector[index] = element;
-        this.vector_size += 1;
+        System.out.println("Insert bigger than size. Use index in range");
+        return;
       }
+      this.head += 1;
+      //updates the size if new head is of bounds
+      if (this.head >= this.vector_capacity) {
+        int new_capacity = this.vector_capacity + RESIZE_SIZE;
+        this.reserve(new_capacity);
+      }
+      //shifts and insert element
+      for (int i = head-1; i >= index; i--) {
+        this.vector[i+1] = this.vector[i];
+      }
+      this.vector[index] = element;
+      this.vector_size += 1;
     }
 
     // Erase a block of elements of size length, starting at index.

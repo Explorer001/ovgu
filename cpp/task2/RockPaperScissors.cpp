@@ -11,8 +11,6 @@
 
 using namespace std;
 
-string choices[] = {"Rock", "Paper", "Scissor"};
-
 /*
  * Determines if choice1 beats choice2.
  *
@@ -52,6 +50,7 @@ int get_computer_choice() {
 }
 
 bool play() {
+    string choices[] = {"Rock", "Paper", "Scissor"};
     int player_choice = ROCK;
     int computer_choice = ROCK;
     int player_input;

@@ -80,15 +80,23 @@ bool play() {
  * Performs three games of Rock-Paper-Scissors and returns true if the player
  * wins at least two of them.
  */
-bool bestOf3() {
+
+bool bestOfN(int n) {
   int player_wins = 0;
+  int computer_wins = 0;
   bool player_win;
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < n; i++) {
     player_win = play();
     player_wins += (player_win) ? 1 : 0;
-    cout << player_wins << "/" << 3 << " Wins" << endl;
+    computer_wins += (player_win) ? 0 : 1;
+    cout << player_wins << "/" << n << " Wins" << endl;
+    cout << player_wins << " : " << computer_wins << endl;
   }
-  return player_wins > 1;
+  return player_wins > (n/2);
+}
+
+bool bestOf3() {
+  return bestOfN(3);
 }
 
 
@@ -97,14 +105,7 @@ bool bestOf3() {
  * wins at least three of them.
  */
 bool bestOf5() {
-  int player_wins = 0;
-  bool player_win;
-  for (int i = 0; i < 5; i++) {
-    player_win = play();
-    player_wins += (player_win) ? 1 : 0;
-    cout << player_wins << "/" << 5 << " Wins" << endl;
-  }
-  return player_wins > 2;
+  return bestOfN(5);
 }
 
 

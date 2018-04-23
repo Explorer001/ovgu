@@ -50,7 +50,7 @@ int main(int, char**) {
     if (std::cin.fail()) {
       //clear cin on fail and break loop
       std::cin.clear();
-      std::cin.ignore(10000, '\n');
+      std::cin.ignore();
       break;
     }
     //resizing shit
@@ -77,7 +77,7 @@ int main(int, char**) {
     if (std::cin.fail()) {
       std::cout << "...really?" << std::endl;
       std::cin.clear();
-      std::cin.ignore(10000, '\n');
+      std::cin.ignore();
       continue;
     } else {
       permutation_array[i_input_count] = i_input;

@@ -116,3 +116,74 @@ getList (ListInt l _) = l
 -- get Sum from list int
 getSum :: ListInt -> Int
 getSum (ListInt _ s) = s
+
+--
+-- 2.6 Mixed Lists
+--
+data Node = NodeString String | NodeInt Int | NodeBool Bool deriving (Show)
+data ML = ML [Node] deriving (Show)
+
+-- extract ints
+extractInt :: ML -> [Int]
+extractInt (ML l)
+    | null l = []
+    | otherwise = let h = head l in
+                  case h of
+                    NodeInt i -> i : extractInt (ML (tail l))
+                    _ -> extractInt (ML (tail l))
+
+-- extract strings
+extractString :: ML -> [String]
+extractString (ML l)
+    | null l = []
+    | otherwise = let h = head l in
+                   case h of
+                    NodeString s -> s : extractString (ML (tail l))
+                    _ -> extractString (ML (tail l))
+
+-- extract bools
+extractBool :: ML -> [Bool]
+extractBool (ML l)
+    | null l = []
+    | otherwise = let h = head l in
+                   case h of
+                    NodeBool s -> s : extractBool (ML (tail l))
+                    _ -> extractBool (ML (tail l))
+
+-- concat two mixed lists
+mlconcat :: ML -> ML -> ML
+mlconcat (ML l1) (ML l2) = ML (l1 ++ l2)
+
+-- prepend list
+prepend :: ML -> ML -> ML
+prepend (ML l1) (ML l2)
+    | length l1 == 1 = ML (l1 ++ l2)
+    | otherwise = error "List too short or too long!"
+
+-- counting functions
+countInt :: ML -> Int
+countInt (ML l)
+    | null l = 0
+    | otherwise = case head l of 
+                    NodeInt _ -> 1 + countInt (ML (tail l))
+                    _ -> countInt (ML (tail l))
+
+countString :: ML -> Int
+countString (ML l)
+    | null l = 0
+    | otherwise = case head l of
+                    NodeString _ -> 1 + countString (ML (tail l))
+                    _ -> countString (ML (tail l))
+
+countBool :: ML -> Int
+countBool (ML l)
+    | null l = 0
+    | otherwise = case head l of
+                    NodeBool _ -> 1 + countBool (ML (tail l))
+                    _ -> countBool (ML (tail l))
+
+-- count components
+countComponents :: ML -> String
+countComponents l = "Strings: " ++ show (countString l) ++
+                    ", Integers: " ++ show (countInt l) ++
+                    ", Bools: " ++ show (countBool l) 

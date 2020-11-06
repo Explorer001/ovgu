@@ -90,7 +90,12 @@ safeSqrt a
 --
 -- Task 2.4
 --
--- TODO: answer
+-- There is a simpler Enumeration in Haskell: the Unit Type.
+-- it is defined by: data () = () with constructor () :: ().
+-- it is a enumeration with exactly 1 value: ().
+-- it can be used to indicate that a function does not return something
+-- interesting.
+--
 
 --
 -- Task 2.5 Hiding Values

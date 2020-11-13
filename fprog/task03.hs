@@ -3,7 +3,7 @@
 --
 splitL :: Int -> [a] -> [[a]]
 splitL index list 
-    | index >= length list = [list]
+    | index - 1 >= length list = [list]
     | otherwise = [getFirstN (index + 1) list, drop (index + 1) list] where
         getFirstN :: Int -> [a] -> [a]
         getFirstN n list
@@ -17,4 +17,5 @@ mSplitL ints list
     | null list = [[]]
     | null ints = [list]
     | otherwise = let x:xs = splitL (head ints) list in
+        if null xs then x : [[]] else
         x : mSplitL (map (subtract (head ints + 1)) (tail ints)) (head xs)

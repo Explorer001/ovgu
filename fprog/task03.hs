@@ -1,3 +1,5 @@
+import Numeric.Natural
+import Data.Maybe
 --
 -- Task 3.1 Splitting Lists
 --
@@ -75,3 +77,52 @@ getList (ListInt l _) = l
 -- get Sum from list int
 getSum :: ListInt -> Int
 getSum (ListInt _ s) = s
+
+--
+-- Task 3.3
+--
+data Component a = Component a Natural deriving (Show)
+type Storage a = [Component a]
+data Product a b = Product a [(b,Int)] deriving (Show)
+
+--getter for product and component
+getCompID :: Component a -> a
+getCompID (Component id _) = id
+
+getCompCount :: Component a -> Natural
+getCompCount (Component _ count) = count
+
+getProdID :: Product a b -> a
+getProdID (Product id _) = id
+
+getProdList :: Product a b -> [(b,Int)]
+getProdList (Product  _ lst) = lst
+
+
+-- maybe returns the amount of components in storage
+contains :: Eq a => Storage a -> a -> Maybe Natural
+contains sto cmp
+    | null sto = Nothing
+    | getCompID (head sto) == cmp = Just (getCompCount (head sto))
+    | otherwise = contains (tail sto) cmp
+
+-- creates or updates storage entry
+store :: Eq a => Storage a -> a -> Natural -> Storage a
+store sto dsc n
+    | isNothing (contains sto dsc) = Component dsc n : sto
+    | otherwise = store' sto dsc n where
+        store' :: Eq a => Storage a -> a -> Natural -> Storage a
+        store' sto dsc n
+            | null sto = []
+            | getCompID (head sto) == dsc = Component dsc ((fromJust (contains sto dsc)) + n) 
+                                                : store' (tail sto) dsc n
+            | otherwise = head sto : store' (tail sto) dsc n
+
+-- removes given item from storage
+remove :: Eq a => Storage a -> a -> Natural -> Storage a
+remove sto dsc n
+    | null sto = []
+    | getCompID (head sto) == dsc = let cc = getCompCount (head sto) in
+        if cc - n <= 0 then remove (tail sto) dsc n
+        else Component dsc (cc - n) : remove (tail sto) dsc n
+    | otherwise = head sto : remove (tail sto) dsc n

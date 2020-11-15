@@ -171,3 +171,52 @@ produce prod sto
 -- this integer. if read "10" is executed in ghci, ghci expects a string to
 -- be able to execute show but read "10" returns a int. this can be fixed
 -- by reading a string with 'read "\"10\"" :: String'
+
+--
+-- Task 3.5 Sets
+--
+data Set a = Set [a] deriving (Show)
+
+-- creates unique set from list
+createSet :: (Eq a, Ord a) => [a] -> Set a
+createSet lst
+    | null lst = Set lst
+    | otherwise = Set (createSet' (sort lst)) where
+        createSet' :: (Eq a, Ord a) => [a] -> [a]
+        createSet' lst
+            | null lst = []
+            | otherwise = let n = createSet' (tail lst) in
+                if null n then head lst : n 
+                else if head n /= head lst then head lst : n
+                else n
+
+-- checks if set conatain value
+setContains :: Eq a => [a] -> a -> Bool
+setContains lst value
+    | null lst = False
+    | head lst == value = True
+    | otherwise = setContains (tail lst) value
+
+-- intersection of sets
+intersection :: Eq a => Set a -> Set a -> Set a
+intersection (Set l1) (Set l2) = Set (intersection' l1 l2) where
+        intersection' :: Eq a => [a] -> [a] -> [a]
+        intersection' l1 l2
+            | null l1 = []
+            | setContains l2 (head l1) = head l1 : intersection' (tail l1) l2
+            | otherwise = intersection' (tail l1) l2
+
+-- complement of sets
+setMinus :: Eq a => Set a -> Set a -> Set a
+setMinus (Set l1) (Set l2) = Set (setMinus' l1 l2) where
+    setMinus' :: Eq a => [a] -> [a] -> [a]
+    setMinus' l1 l2
+        | null l1 = []
+        | setContains l2 (head l1) = setMinus' (tail l1) l2
+        | otherwise = head l1 : setMinus' (tail l1) l2
+
+-- union of sets
+union :: Eq a => Set a -> Set a -> Set a
+union s1 s2 = let s3 = intersection s1 s2 in concat' (setMinus s1 s3) s2 where
+    concat' :: Eq a => Set a -> Set a -> Set a
+    concat' (Set l1) (Set l2) = Set (l1 ++ l2)

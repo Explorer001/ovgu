@@ -79,7 +79,7 @@ getSum :: ListInt -> Int
 getSum (ListInt _ s) = s
 
 --
--- Task 3.3
+-- Task 3.3 components and products
 --
 data Component a = Component a Natural deriving (Show)
 type Storage a = [Component a]
@@ -147,3 +147,27 @@ produce prod sto
         produce' lst sto
             | null lst = sto
             | otherwise = produce' (tail lst) (remove sto (fst (head lst)) (fromInteger (toInteger (snd (head lst)))))
+
+--
+-- Task 3.4 Polymorphism Quirks 
+--
+-- 1.
+-- 
+-- "" == []
+--     :t "" = "" :: [Char], :t [] = [] :: [a]
+--     so [] is a generic list and "" a char list -> evaluates to true
+--
+-- tail [1] == ""
+--     :t tail [1] = tail [1] :: Num a => [a]
+--     constraint that generic type a has to be num -> not statisfied by char
+--
+-- tail [1] == []
+--     generic type a statisfies Num a
+--
+-- 2.
+--
+-- read "10" == 0 evaluates to true. this is because the _ == 10 operator
+-- expects to compare the first argument with an integer. read "10" returns
+-- this integer. if read "10" is executed in ghci, ghci expects a string to
+-- be able to execute show but read "10" returns a int. this can be fixed
+-- by reading a string with 'read "\"10\"" :: String'

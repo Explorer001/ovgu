@@ -175,7 +175,7 @@ produce prod sto
 --
 -- Task 3.5 Sets
 --
-data Set a = Set [a] deriving (Show)
+data Set a = Set [a]
 
 -- creates unique set from list
 createSet :: (Eq a, Ord a) => [a] -> Set a
@@ -234,3 +234,13 @@ instance Ord a => Ord (Set a) where
         if s1 == s2 then EQ
         else if intersection s1 s2 == s1 then LT
         else GT
+
+instance Show a => Show (Set a) where
+    show (Set l1) = stringify' l1 True where
+        stringify' :: Show a => [a] -> Bool -> String
+        stringify' lst first
+            | first = "{" ++ stringify' lst False
+            | null lst = "}"
+            | otherwise = 
+                if null (tail lst) then show (head lst) ++ stringify' (tail lst) False
+                else show (head lst) ++ ", " ++ stringify' (tail lst) False

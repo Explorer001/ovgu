@@ -220,3 +220,17 @@ union :: Eq a => Set a -> Set a -> Set a
 union s1 s2 = let s3 = intersection s1 s2 in concat' (setMinus s1 s3) s2 where
     concat' :: Eq a => Set a -> Set a -> Set a
     concat' (Set l1) (Set l2) = Set (l1 ++ l2)
+
+-- checks if given set is empty
+setEmpty :: Eq a => Set a -> Bool
+setEmpty (Set l1) = null l1
+
+instance Eq a => Eq (Set a) where
+    s1 == s2 = if setEmpty (setMinus s1 s2) && setEmpty (setMinus s2 s1) then True
+               else False
+
+instance Ord a => Ord (Set a) where
+    s1 `compare` s2 =
+        if s1 == s2 then EQ
+        else if intersection s1 s2 == s1 then LT
+        else GT

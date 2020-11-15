@@ -126,3 +126,24 @@ remove sto dsc n
         if cc - n <= 0 then remove (tail sto) dsc n
         else Component dsc (cc - n) : remove (tail sto) dsc n
     | otherwise = head sto : remove (tail sto) dsc n
+
+-- checks if item is producible
+isProducible :: (Eq a, Eq b) => Product b a -> Storage a -> Bool
+isProducible prod sto = isProducible' (getProdList prod) sto where
+    isProducible' :: Eq a => [(a, Int)] -> Storage a -> Bool
+    isProducible' lst sto
+        | null lst = True
+        | otherwise = let cont = contains sto (fst (head lst)) in
+            if isNothing cont then False
+            else if fromJust cont < fromInteger (toInteger (snd (head lst))) then False
+            else isProducible' (tail lst) sto
+
+-- produces given component if possible
+produce :: (Eq a, Eq b) => Product b a -> Storage a -> Storage a
+produce prod sto
+    | isProducible prod sto == False = sto
+    | otherwise = produce' (getProdList prod) sto where
+        produce' :: Eq a => [(a, Int)] -> Storage a -> Storage a
+        produce' lst sto
+            | null lst = sto
+            | otherwise = produce' (tail lst) (remove sto (fst (head lst)) (fromInteger (toInteger (snd (head lst)))))

@@ -19,11 +19,14 @@ USEMODULE += gnrc_icmpv6_error
 USEMODULE += gnrc_udp
 # Additional networking modules that can be dropped if not needed
 USEMODULE += gnrc_icmpv6_echo
-#USEMODULE += gnrc_pktdump
+USEMODULE += gnrc_pktdump
 USEMODULE += gnrc_ipv6_default
-USEMODULE += gnrc_udp
+USEMODULE += sock
+USEMODULE += sock_udp
+USEMODULE += gnrc_sock
 USEMODULE += gnrc_sock_udp
-#USEMODULE += posix_sockets
+USEMODULE += posix_inet
+USEMODULE += posix_sockets
 # Add also the shell, some shell commands
 USEMODULE += shell
 USEMODULE += shell_commands
@@ -72,3 +75,4 @@ CFLAGS += -DCONFIG_GNRC_IPV6_NIB_NUMOF=50
 CFLAGS += -DCONFIG_GNRC_IPV6_NIB_OFFL_NUMOF=50
 
 CFLAGS += '-DDEBUG_ASSERT_VERBOSE'
+#CFLAGS += '-DMODULE_SOCK_UDP=1'

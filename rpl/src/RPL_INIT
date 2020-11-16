@@ -1,0 +1,14 @@
+#1
+* on root node configure new ipv6 address.
+* ifconfig <if> add <addr>
+* eg: ifconfig 6 add 2001:db8::1
+#2
+* init rpl on all nodes
+* rpl init <if>
+* eg: rpl init 6
+#3
+* add dodag to root node
+* rpl root 1 <addr>
+* rpl root 1 2001:db8::1
+#3
+* test with listen and send

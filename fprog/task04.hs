@@ -62,3 +62,18 @@ getByKey lst key =
 --  foldl (+) 0 [1,2,3] = 6
 --  foldl1 (+) [1,2,3] = 6
 -- same for foldr1
+
+--
+-- 4.3 Steams and higher order functions
+--
+ev :: [Int]
+ev = filter (\x -> x `mod` 2 == 0) [0 ..]
+
+harmonic :: (Fractional a, Enum a) => [a]
+harmonic = map (1/) (tail [0 ..])
+
+triangle :: [Int]
+triangle = map (\x -> foldr1 (+) [1 .. x]) (tail [0 ..])
+
+palin :: [Int]
+palin = filter (\x -> show x == reverse (show x)) [0 ..]

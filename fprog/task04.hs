@@ -77,3 +77,12 @@ triangle = map (\x -> foldr1 (+) [1 .. x]) (tail [0 ..])
 
 palin :: [Int]
 palin = filter (\x -> show x == reverse (show x)) [0 ..]
+
+--
+-- 4.4 Advanced folding and filtering
+--
+dfold :: (b -> c -> c) -> c -> (a -> b -> b) -> b -> [[a]] -> c
+dfold op1 val1 op2 val2 lst = foldr op1 val1 (map (foldr op2 val2) lst)
+
+nfilter :: [(a -> Bool)] -> [a] -> [a]
+nfilter conditions lst = filter (\x -> foldr (&&) True (map (\y -> y x) conditions)) lst

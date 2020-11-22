@@ -86,3 +86,12 @@ dfold op1 val1 op2 val2 lst = foldr op1 val1 (map (foldr op2 val2) lst)
 
 nfilter :: [(a -> Bool)] -> [a] -> [a]
 nfilter conditions lst = filter (\x -> foldr (&&) True (map (\y -> y x) conditions)) lst
+
+--
+-- 4.5 Function family and stream of streams
+--
+f_all :: [[Int]]
+f_all = map (\y -> map (\x -> x * x + x + y) [0 ..]) [0 ..]
+
+ttake :: Int -> Int -> [[a]] -> [a]
+ttake ntake add stream = take ntake (stream !! add)

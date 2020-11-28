@@ -1,3 +1,6 @@
+import Data.Bifoldable
+import Data.Bifunctor
+
 --
 -- 5.1 Comprehensible Streams
 --
@@ -77,6 +80,26 @@ instance Foldable Seq where
     foldr f n (Lseq v s) = foldr f (foldr f n s) v
     foldr f n (Pseq (v1, v2) s) = f v2 (f v1 (foldr f n s))
     foldr f n End = n
+
+--
+-- 5.5 Functor Functor and Foldable Foldable
+--
+data Pair_ a b = Pair_ a b deriving (Show)
+data Either_ a b = Left_ a | Right_ b deriving (Show)
+
+instance Bifoldable Pair_ where
+    bifoldr f1 f2 n (Pair_ v1 v2) = f1 v1 (f2 v2 n)
+
+instance Bifunctor Pair_ where
+    bimap f1 f2 (Pair_ v1 v2) = Pair_ (f1 v1) (f2 v2)
+
+instance Bifoldable Either_ where
+    bifoldr f1 f2 n (Left_ val) = f1 val n
+    bifoldr f1 f2 n (Right_ val) = f2 val n
+
+instance Bifunctor Either_ where
+    bimap f1 f2 (Left_ val) = Left_ (f1 val)
+    bimap f1 f2 (Right_ val) = Right_ (f2 val)
 
 --
 -- 5.6 Not enough Folding and Mapping: Functor^3 and Foldable^3

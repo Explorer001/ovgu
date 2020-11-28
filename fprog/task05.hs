@@ -77,3 +77,20 @@ instance Foldable Seq where
     foldr f n (Lseq v s) = foldr f (foldr f n s) v
     foldr f n (Pseq (v1, v2) s) = f v2 (f v1 (foldr f n s))
     foldr f n End = n
+
+--
+-- 5.6 Not enough Folding and Mapping: Functor^3 and Foldable^3
+--
+data Triple a b c = Triple a b c deriving (Show)
+
+class Trifunctor p where
+    trimap :: (a -> b) -> (c -> d) -> (e -> f) -> p a c e -> p b d f
+
+class Trifoldable p where
+    trifoldr :: (a -> c -> c) -> (b -> c -> c) -> (d -> c -> c) -> c -> p a b d -> c
+
+instance Trifunctor Triple where
+    trimap f1 f2 f3 (Triple v1 v2 v3) = Triple (f1 v1) (f2 v2) (f3 v3)
+
+instance Trifoldable Triple where
+    trifoldr f1 f2 f3 n (Triple v1 v2 v3) = f1 v1 (f2 v2 (f3 v3 n))

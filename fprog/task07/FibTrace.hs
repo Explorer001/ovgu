@@ -9,4 +9,4 @@ import Debug.Trace
 fib :: Int -> Int
 fib 0 = trace "fib(0)" 0
 fib 1 = trace "fib(1)" 1
-fib n = trace ("fib(" ++ show n ++ ")") fib (n-1) + fib (n-2)
+fib n = trace ("fib(" ++ show (n-1) ++ ") + fib(" ++ show (n-2) ++ ")") fib (n-1) + fib (n-2)

@@ -2,8 +2,8 @@ import Debug.Trace
 
 --
 -- Trace takes a string to print and a function to call. It returns
--- the return value of that function. If the function is pure, then
--- trace is pure.
+-- the return value of that function. Not pure since it prints to screen.
+-- https://wiki.haskell.org/Pure
 --
 
 fib :: Int -> Int

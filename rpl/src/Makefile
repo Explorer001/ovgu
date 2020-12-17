@@ -10,8 +10,10 @@ RIOTBASE ?= $(CURDIR)/../RIOT
 # Include packages that pull up and auto-init the link layer.
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present
 USEMODULE += auto_init_gnrc_netif
+USEMODULE += gnrc_netif_single
 # add RPL module
 USEMODULE += gnrc_rpl
+USEMODULE += auto_init_gnrc_rpl
 # Activate ICMPv6 error messages
 USEMODULE += gnrc_icmpv6_error
 # Specify the mandatory networking modules for IPv6 and UDP

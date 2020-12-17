@@ -11,12 +11,12 @@ MEASURE_NODE_DEST_L3ADDR = "2001:db8::1"
 #
 # Layer 2 address of node that sends measurement packets.
 #
-MEASURE_NODE_L2ADDR = 0xff
+MEASURE_NODE_L2ADDR = 0x79
 
 #
 # Layer 2 address of the dodag root.
 #
-ROOT_NODE_L2ADDR = 0xa7
+ROOT_NODE_L2ADDR = 0x71
 
 #
 # number of measurement packets that are sent from source to dest node

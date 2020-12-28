@@ -342,6 +342,19 @@ displayHelp = do
     putStrLn "(q)uit     - Exit the game."
     putStrLn "(s)how     - Print current settings."
 
+-- Changes the grid size.
+--
+-- game: The game context.
+changeGrid :: Game -> IO Game
+changeGrid game = do
+    putStrLn "Enter new grid size (3-20):"
+    size <- readLn
+    if size < 3 || size > 20 then
+        return game
+    else do
+        wopts <- return $ setGridSize size (setWinCon size (getOpts game))
+        return $ setOpts wopts (setGrid (emptyGrid size) game)
+
 -- Displays current settings.
 displaySettings :: Game -> IO ()
 displaySettings game = do
@@ -387,6 +400,9 @@ mainLoop = do
             else if pMatch line ["t", "torus"] then do
                 startTorus game
                 mainLoop
+            else if pMatch line ["g", "grid"] then do
+                ng <- changeGrid game
+                mainLoop' ng
             else do
                 putStrLn ("Unknown command \'" ++ line ++ "\'")
                 mainLoop' game

@@ -334,7 +334,7 @@ displayHelp = do
     putStrLn "(h)elp     - Show help."
     putStrLn "(g)ridsize - Alter the grid size."
     putStrLn "(p)layers  - Alter the number of players."
-    putStrLn "(t)oken    - Alter a players token representation."
+    putStrLn "to(k)en    - Alter a players token representation."
     putStrLn "(w)incond  - Alter the win condition."
     putStrLn "(t)orus    - Start torus with current settings."
     putStrLn "(i)nvert   - Start invert with current settings."
@@ -349,11 +349,57 @@ changeGrid :: Game -> IO Game
 changeGrid game = do
     putStrLn "Enter new grid size (3-20):"
     size <- readLn
-    if size < 3 || size > 20 then
+    if size < 3 || size > 20 then do
+        putStrLn "Illegal size!"
         return game
     else do
+        putStrLn "Changed size."
         wopts <- return $ setGridSize size (setWinCon size (getOpts game))
         return $ setOpts wopts (setGrid (emptyGrid size) game)
+
+-- Changes the win condition.
+--
+-- game: The game context.
+changeWinCon :: Game -> IO Game
+changeWinCon game = do
+    putStrLn $ "Enter new win condition (3-" ++ show (getWinCon (getOpts game)) ++ "):"
+    wcon <- readLn
+    if wcon < 3 || wcon > getWinCon (getOpts game) - 1 then do
+        putStrLn "Illegal win condition!"
+        return game
+    else do
+        putStrLn "Changed win condition."
+        nops <- return $ setWinCon wcon (getOpts game)
+        return $ setOpts nops game
+
+-- Changes the player tokens.
+--
+-- game: The game context.
+changeTokens :: Game -> IO Game
+changeTokens game = changeTokens' 0 (getNumPlayers (getOpts game)) game where
+    changeTokens' :: Int -> Int -> Game -> IO Game
+    changeTokens' i nplayer game
+        | i >= nplayer = return game
+        | otherwise = do
+            putStrLn $ "Enter token for Player " ++ show (i+1) ++ ":"
+            tkn <- getLine
+            changeTokens' (i+1) nplayer (setTokens (Data.Map.insert i (head tkn) (getTokens game)) game)
+
+-- Change the number of Players.
+--
+-- game: The game context
+changeNumPlayer :: Game -> IO Game
+changeNumPlayer game = do
+    size <- return $ getGridSize (getOpts game)
+    putStrLn $ "Enter the number of players (2-" ++ show (size - 1) ++ "):"
+    np <- readLn
+    if np < 2 || np > (size - 1) then do
+        putStrLn "Illegal number of players!"
+        return game
+    else do
+        putStrLn "Changed number of players."
+        ng <- return $ setOpts (setNumPlayers np (getOpts game)) game
+        changeTokens ng
 
 -- Displays current settings.
 displaySettings :: Game -> IO ()
@@ -402,6 +448,15 @@ mainLoop = do
                 mainLoop
             else if pMatch line ["g", "grid"] then do
                 ng <- changeGrid game
+                mainLoop' ng
+            else if pMatch line ["w", "wincond"] then do
+                ng <- changeWinCon game
+                mainLoop' ng
+            else if pMatch line ["k", "tokens"] then do
+                ng <- changeTokens game
+                mainLoop' ng
+            else if pMatch line ["p", "players"] then do
+                ng <- changeNumPlayer game
                 mainLoop' ng
             else do
                 putStrLn ("Unknown command \'" ++ line ++ "\'")

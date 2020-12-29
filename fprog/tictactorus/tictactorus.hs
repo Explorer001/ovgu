@@ -1,6 +1,7 @@
 import Data.Map
 import Data.Maybe
 import Data.List
+import Safe
 
 -- Possible game states:
 --  * Running: No Player as won and there are still possible moves.
@@ -297,6 +298,12 @@ isRunning game = case (getGameState game) of
     PWon _ -> False
     _ -> True
 
+-- Reads int from stdin.
+readInt :: IO (Maybe Int)
+readInt = do
+    str <- getLine
+    return $ readMay str
+
 -- Performs a turn in torus.
 --
 -- i,j: The token position.
@@ -354,14 +361,19 @@ displayHelp = do
 changeGrid :: Game -> IO Game
 changeGrid game = do
     putStrLn "Enter new grid size (3-20):"
-    size <- readLn
-    if size < 3 || size > 20 then do
-        putStrLn "Illegal size!"
-        return game
+    input <- readInt
+    if isNothing input then do
+        putStrLn "Illegal input!"
+        changeGrid game
     else do
-        putStrLn "Changed size."
-        wopts <- return $ setGridSize size (setWinCon size (getOpts game))
-        return $ setOpts wopts (setGrid (emptyGrid size) game)
+        size <- return $ fromJust input
+        if size < 3 || size > 20 then do
+            putStrLn "Illegal size!"
+            return game
+        else do
+            putStrLn "Changed size."
+            wopts <- return $ setGridSize size (setWinCon size (getOpts game))
+            return $ setOpts wopts (setGrid (emptyGrid size) game)
 
 -- Changes the win condition.
 --
@@ -369,14 +381,19 @@ changeGrid game = do
 changeWinCon :: Game -> IO Game
 changeWinCon game = do
     putStrLn $ "Enter new win condition (3-" ++ show (getWinCon (getOpts game)) ++ "):"
-    wcon <- readLn
-    if wcon < 3 || wcon > getWinCon (getOpts game) - 1 then do
-        putStrLn "Illegal win condition!"
-        return game
+    input <- readInt
+    if isNothing input then do
+        putStrLn "Illegal input!"
+        changeWinCon game
     else do
-        putStrLn "Changed win condition."
-        nops <- return $ setWinCon wcon (getOpts game)
-        return $ setOpts nops game
+        wcon <- return $ fromJust input
+        if wcon < 3 || wcon > getWinCon (getOpts game) then do
+            putStrLn "Illegal win condition!"
+            return game
+        else do
+            putStrLn "Changed win condition."
+            nops <- return $ setWinCon wcon (getOpts game)
+            return $ setOpts nops game
 
 -- Changes the player tokens.
 --
@@ -398,14 +415,19 @@ changeNumPlayer :: Game -> IO Game
 changeNumPlayer game = do
     size <- return $ getGridSize (getOpts game)
     putStrLn $ "Enter the number of players (2-" ++ show (size - 1) ++ "):"
-    np <- readLn
-    if np < 2 || np > (size - 1) then do
-        putStrLn "Illegal number of players!"
-        return game
+    input <- readInt
+    if isNothing input then do
+        putStrLn "Illegal input!"
+        changeNumPlayer game
     else do
-        putStrLn "Changed number of players."
-        ng <- return $ setOpts (setNumPlayers np (getOpts game)) game
-        changeTokens ng
+        np <- return $ fromJust input
+        if np < 2 || np > (size - 1) then do
+            putStrLn "Illegal number of players!"
+            return game
+        else do
+            putStrLn "Changed number of players."
+            ng <- return $ setOpts (setNumPlayers np (getOpts game)) game
+            changeTokens ng
 
 -- Displays current settings.
 displaySettings :: Game -> IO ()

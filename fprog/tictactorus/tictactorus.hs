@@ -155,6 +155,12 @@ mapString game =
 instance Show Game where
     show game = (state (getGameState game)) ++ "\n" ++ mapString game
 
+-- Get all rotations of a list.
+--
+-- lst: The list.
+getRots :: [a] -> [[a]]
+getRots lst = init (zipWith (++) (tails lst) (inits lst))
+
 -- Retrieve row i of a n sized grid.
 --
 --  i: Row to retrieve.
@@ -218,10 +224,10 @@ getCandidates :: Game -> [[Token]]
 getCandidates game = 
     let gmap = getGrid game
         n = getGridSize (getOpts game) in
-                       [getDiagF x n gmap | x <- [0 .. n-1]] ++
-                       [getDiagR x n gmap | x <- [0 .. n-1]] ++
-                       [getCol x n gmap | x <- [0 .. n-1]] ++
-                       [getRow x n gmap | x <- [0 .. n-1]]
+               concat ([getRots (getDiagF x n gmap) | x <- [0 .. n-1]] ++
+                       [getRots (getDiagR x n gmap) | x <- [0 .. n-1]] ++
+                       [getRots (getCol x n gmap) | x <- [0 .. n-1]] ++
+                       [getRots (getRow x n gmap) | x <- [0 .. n-1]])
 
 -- Check if a candidate contains a winning condition.
 --
@@ -434,6 +440,7 @@ mainLoop = do
     mainLoop' createT3 where
         mainLoop' :: Game -> IO ()
         mainLoop' game = do
+            putStr "> "
             line <- getLine
             if pMatch line ["q", "quit"] then do
                 putStrLn "Exiting..."

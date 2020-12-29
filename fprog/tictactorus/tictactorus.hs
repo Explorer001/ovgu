@@ -425,7 +425,7 @@ displaySettings game = do
     putStrLn ("Number of players: " ++ (show (getNumPlayers (getOpts game))))
     putStrLn ("Grid size        : " ++ (show (getGridSize (getOpts game))))
     putStrLn ("Win condition    : " ++ (show (getWinCon (getOpts game))))
-    putStrLn "Player tokens    :"
+    putStrLn ("Player tokens    : " ++ (elems (getTokens game)))
 
 -- Checks if list contains given string.
 pMatch :: String -> [String] -> Bool

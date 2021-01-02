@@ -1,6 +1,7 @@
 import Data.Map
 import Data.Maybe
 import Data.List
+import Data.List.Split
 import Safe
 
 -- Possible game states:
@@ -8,7 +9,7 @@ import Safe
 --  * PWon: Player indicated by Int parameter has won the game.
 --  * Draw: Game is remis.
 --  * Illegal: Some pisdez.
-data GameState = Running | PWon Int | Draw | Illegal deriving (Eq, Show)
+data GameState = Running | PWon Int | Draw | Score Int | Illegal deriving (Eq, Show)
 
 -- State to string.
 state :: GameState -> String
@@ -16,20 +17,15 @@ state s = case s of
     Running -> "The game is running."
     PWon x -> "Player " ++ show (x+1) ++ " won!"
     Draw -> "Draw!"
+    Score x -> "Total score: " ++ show x
     Illegal -> "Pisdez!"
-
--- Check if state is PWon.
-stateWon :: GameState -> Bool
-stateWon s = case s of
-    PWon _ -> True
-    _ -> False
 
 -- Supported game modes.
 --  * Torus: Basic torus TicTacToe.
 --  * Inverted: Set as many tokens as possible without winning.
 --  * Gravity: Torus like connect 4.
 --
-data GameMode = Torus | Inverted | Gravity
+data GameMode = Torus | Inverted | Gravity deriving (Eq)
 
 -- Mode to string.
 mode :: GameMode -> String
@@ -289,6 +285,18 @@ setStateTorus game
         else
             setGameState Running game
 
+-- Sets the game state for a inverted game.
+--
+-- game: The game context.
+setStateInvert :: Game -> Game
+setStateInvert game
+    | elem Empty (getGrid game) == False = setGameState (Score (getTurn game)) game
+    | otherwise = let winner = checkWin game in
+        if winner /= Empty then
+            setGameState (Score (getTurn game)) game
+        else
+            setGameState Running game
+
 -- Checks if the game is currently running.
 --
 -- game: The game context.
@@ -296,30 +304,57 @@ isRunning :: Game -> Bool
 isRunning game = case (getGameState game) of
     Draw -> False
     PWon _ -> False
+    Score _ -> False
     _ -> True
+
+-- Parses int from string.
+-- str: The input string.
+-- returns: Integer or -1 on failure.
+parseInt :: String -> Int
+parseInt str =
+    let mint = readMay str in
+        if isNothing mint then
+            (-1)
+        else
+            fromJust mint
 
 -- Reads int from stdin.
 -- returns: Integer or -1 on failure.
 readInt :: IO Int
 readInt = do
     str <- getLine
-    mint <- return $ readMay str
-    if isNothing mint then
-        return (-1)
-    else
-        return $ fromJust mint
+    return $ parseInt str
 
--- Performs a turn in torus.
+-- Parses a move for normal games i.e '0,1'
+-- 
+-- str: The move.
+-- returns: Tuple with move coordinates or (-1,-1).
+parseMove :: String -> (Int, Int)
+parseMove str =
+    let parts = splitOn "," str in
+        if length parts /= 2 then
+            (-1,-1)
+        else
+            (parseInt $ head parts, parseInt $ last parts)
+
+-- Performs a turn in torus or invert.
 --
--- i,j: The token position.
+-- move: The unparsed token position.
 -- game: The game context.
-doTurnTorus :: Int -> Int -> Game -> Game
-doTurnTorus i j game
-    | stateWon (getGameState game) = game
-    | getGameState game == Draw = game
-    | isNothing (tokenAt i j game) = setGameState Illegal game
-    | fromJust (tokenAt i j game) /= Empty = setGameState Illegal game
-    | otherwise = setStateTorus (setTurn ((getTurn game) + 1) (setToken i j game))
+doTurnTorusInvert :: String -> Game -> Game
+doTurnTorusInvert move game = 
+    let tpl = parseMove move in
+        doTurnTorusInvert' (fst tpl) (snd tpl) game where
+            doTurnTorusInvert' :: Int -> Int -> Game -> Game
+            doTurnTorusInvert' i j game
+                | isRunning game == False = game
+                | isNothing (tokenAt i j game) = setGameState Illegal game
+                | fromJust (tokenAt i j game) /= Empty = setGameState Illegal game
+                | otherwise = 
+                    if getGameMode (getOpts game) == Torus then
+                        setStateTorus (setTurn ((getTurn game) + 1) (setToken i j game))
+                    else
+                        setStateInvert (setTurn ((getTurn game) + 1) (setToken i j game))
  
 -- The main game loop.
 --
@@ -332,25 +367,30 @@ gameLoop :: Game -> IO ()
 gameLoop game = do
     putStrLn $ show game
     player <- return $ (mod (getTurn game) (getNumPlayers (getOpts game))) + 1
-    putStrLn $ "Enter i (Player " ++ show player ++ "):"
-    i <- readInt
-    putStrLn $ "Enter j (Player " ++ show player ++ "):"
-    j <- readInt
-    ngame <- return $ doTurnTorus i j game
-    if isRunning ngame then
-        gameLoop ngame
-    else
-        putStrLn $ show ngame   
+    putStrLn $ "Enter move (Player " ++ show player ++ "):"
+    input <- getLine
+    if pMatch input ["q", "quit"] then
+        return ()
+    else do
+        ngame <- return $ doTurnTorusInvert input game
+        if isRunning ngame then
+            gameLoop ngame
+        else do
+            putStrLn $ show ngame
  
 
 -- Start torus game.
 startTorus :: Game -> IO ()
 startTorus game = gameLoop (setOpts (setGameMode Torus (getOpts game)) game)
 
+-- Start inverted game.
+startInvert :: Game -> IO ()
+startInvert game = gameLoop (setOpts (setGameMode Inverted (getOpts game)) game)
+
 displayHelp :: IO ()
 displayHelp = do
     putStrLn "(h)elp     - Show help."
-    putStrLn "(g)ridsize - Alter the grid size."
+    putStrLn "g(r)idsize - Alter the grid size."
     putStrLn "(p)layers  - Alter the number of players."
     putStrLn "to(k)en    - Alter a players token representation."
     putStrLn "(w)incond  - Alter the win condition."
@@ -447,8 +487,9 @@ mainLoop :: IO ()
 mainLoop = do
     putStrLn "Welcome to TicTacTorus!"
     putStrLn "Enter \'help\' to display commands."
-    putStrLn "Moves are provided by coordinates, i.e \'0 0\' is the field top left."
-    putStrLn "Coordinate \'0 2\' is the third field from left in the top row."
+    putStrLn "Moves are provided by coordinates, i.e \'0,0\' is the field top left."
+    putStrLn "Coordinate \'0,2\' is the third field from left in the top row."
+    putStrLn "In gravity mode moves consist of the column number, i.e. \'1\'."
     mainLoop' createT3 where
         mainLoop' :: Game -> IO ()
         mainLoop' game = do
@@ -465,7 +506,10 @@ mainLoop = do
             else if pMatch line ["t", "torus"] then do
                 startTorus game
                 mainLoop
-            else if pMatch line ["g", "grid"] then do
+            else if pMatch line ["i", "invert"] then do
+                startInvert game
+                mainLoop
+            else if pMatch line ["r", "gridsize"] then do
                 ng <- changeGrid game
                 mainLoop' ng
             else if pMatch line ["w", "wincond"] then do

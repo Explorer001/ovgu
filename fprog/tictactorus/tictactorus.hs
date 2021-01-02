@@ -18,7 +18,7 @@ state s = case s of
     PWon x -> "Player " ++ show (x+1) ++ " won!"
     Draw -> "Draw!"
     Score x -> "Total score: " ++ show x
-    Illegal -> "Pisdez!"
+    Illegal -> "Illegal move!"
 
 -- Supported game modes.
 --  * Torus: Basic torus TicTacToe.
@@ -273,11 +273,11 @@ setToken i j game =
     let tkn = T (mod (getTurn game) (getNumPlayers (getOpts game))) in
         setGrid (Data.Map.insert (i, j) tkn (getGrid game)) game
 
--- Sets the game state for a Torus game.
+-- Sets the game state for a normal game.
 --
 -- game: The game context.
-setStateTorus :: Game -> Game
-setStateTorus game
+setState :: Game -> Game
+setState game
     | elem Empty (getGrid game) == False = setGameState Draw game
     | otherwise = let winner = checkWin game in
         if winner /= Empty then
@@ -352,9 +352,41 @@ doTurnTorusInvert move game =
                 | fromJust (tokenAt i j game) /= Empty = setGameState Illegal game
                 | otherwise = 
                     if getGameMode (getOpts game) == Torus then
-                        setStateTorus (setTurn ((getTurn game) + 1) (setToken i j game))
+                        setState (setTurn ((getTurn game) + 1) (setToken i j game))
                     else
                         setStateInvert (setTurn ((getTurn game) + 1) (setToken i j game))
+
+-- Gets the first empty Field in a column from bottom to top.
+--
+-- game: The game context
+-- r: The column number.
+-- returns: The field or Nothing if column is full.
+getGravityField :: Game -> Int -> Maybe (Int, Int)
+getGravityField game r =
+    let n = getGridSize (getOpts game) in
+        gGF (n-1) r game where
+            gGF :: Int -> Int -> Game -> Maybe (Int, Int)
+            gGF i j g
+                | tokenAt i j game == Nothing = Nothing
+                | tokenAt i j game == Just Empty = Just (i, j)
+                | otherwise = gGF (i-1) j g
+
+-- Performs a turn in gravity mode.
+--
+-- move: The unparsed move.
+-- game: The game context.
+doTurnGravity :: String -> Game -> Game
+doTurnGravity move game
+    | isRunning game == False = game
+    | otherwise = let r = parseInt move in
+        if r < 0 then
+            setGameState Illegal game
+        else
+            let gf = getGravityField game r in
+            if isNothing gf then
+                setGameState Illegal game
+            else
+                setState (setTurn ((getTurn game) + 1) (setToken (fst (fromJust gf)) (snd (fromJust gf)) game))
  
 -- The main game loop.
 --
@@ -372,11 +404,16 @@ gameLoop game = do
     if pMatch input ["q", "quit"] then
         return ()
     else do
-        ngame <- return $ doTurnTorusInvert input game
+        ngame <- return $ doTurn input game
         if isRunning ngame then
             gameLoop ngame
         else do
             putStrLn $ show ngame
+        where
+            doTurn :: String -> Game -> Game
+            doTurn move game
+                | getGameMode (getOpts game) == Gravity = doTurnGravity move game
+                | otherwise = doTurnTorusInvert move game
  
 
 -- Start torus game.
@@ -386,6 +423,10 @@ startTorus game = gameLoop (setOpts (setGameMode Torus (getOpts game)) game)
 -- Start inverted game.
 startInvert :: Game -> IO ()
 startInvert game = gameLoop (setOpts (setGameMode Inverted (getOpts game)) game)
+
+-- Start gravity game.
+startGravity :: Game -> IO ()
+startGravity game = gameLoop (setOpts (setGameMode Gravity (getOpts game)) game)
 
 displayHelp :: IO ()
 displayHelp = do
@@ -508,6 +549,9 @@ mainLoop = do
                 mainLoop
             else if pMatch line ["i", "invert"] then do
                 startInvert game
+                mainLoop
+            else if pMatch line ["g", "gravity"] then do
+                startGravity game
                 mainLoop
             else if pMatch line ["r", "gridsize"] then do
                 ng <- changeGrid game

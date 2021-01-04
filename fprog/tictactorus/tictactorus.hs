@@ -534,7 +534,7 @@ mainLoop = do
     mainLoop' createT3 where
         mainLoop' :: Game -> IO ()
         mainLoop' game = do
-            putStr "> "
+            putStrLn "> "
             line <- getLine
             if pMatch line ["q", "quit"] then do
                 putStrLn "Exiting..."
@@ -568,3 +568,5 @@ mainLoop = do
             else do
                 putStrLn ("Unknown command \'" ++ line ++ "\'")
                 mainLoop' game
+
+main = mainLoop

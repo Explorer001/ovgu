@@ -1,6 +1,7 @@
 import Text.ParserCombinators.Parsec
 import Data.List.Split
 import qualified Data.Text.IO as TextIO
+import Text.Parsec.Char
 
 data Implication = Implication [String] [String] deriving (Show)
 
@@ -14,6 +15,11 @@ implicationParser = do
     q <- implication
     return $ Implication (splitOn "," p) (splitOn "," q)
 
+implicationsP :: Parser [Implication]
+implicationsP = many (do l <- implicationParser
+                         endOfLine
+                         return l)
+
 main :: IO ()
 main = do log <- readFile "implications.txt"
-          print $ parse implicationParser "ERROR" log
+          print $ parse implicationsP "ERROR" log

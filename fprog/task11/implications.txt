@@ -1,1 +1,3 @@
 aac,bdef,d -> e
+f,g -> d,e
+e,f,g -> a
